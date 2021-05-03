@@ -119,24 +119,25 @@ static void http_rest_with_url(void)
      * If URL as well as host and path parameters are specified, values of host and path will be considered.
      */
     esp_http_client_config_t config = {
-        .host = "httpbin.org",
+        .host = "amazonaws.com",
         .path = "/get",
         .query = "esp",
         .event_handler = _http_event_handler,
         .user_data = local_response_buffer,        // Pass address of local buffer to get response
+        .buffer_size_tx = 2048,
     };
     esp_http_client_handle_t client = esp_http_client_init(&config);
 
     // GET
-    esp_err_t err = esp_http_client_perform(client);
-    if (err == ESP_OK) {
-        ESP_LOGI(TAG, "HTTP GET Status = %d, content_length = %d",
-                esp_http_client_get_status_code(client),
-                esp_http_client_get_content_length(client));
-    } else {
-        ESP_LOGE(TAG, "HTTP GET request failed: %s", esp_err_to_name(err));
-    }
-    ESP_LOG_BUFFER_HEX(TAG, local_response_buffer, strlen(local_response_buffer));
+    // esp_err_t err = esp_http_client_perform(client);
+    // if (err == ESP_OK) {
+    //     ESP_LOGI(TAG, "HTTP GET Status = %d, content_length = %d",
+    //             esp_http_client_get_status_code(client),
+    //             esp_http_client_get_content_length(client));
+    // } else {
+    //     ESP_LOGE(TAG, "HTTP GET request failed: %s", esp_err_to_name(err));
+    // }
+    // ESP_LOG_BUFFER_HEX(TAG, local_response_buffer, strlen(local_response_buffer));
 
     // POST
     const char *post_data = "{\"field1\":\"value1\"}";
@@ -144,7 +145,7 @@ static void http_rest_with_url(void)
     esp_http_client_set_method(client, HTTP_METHOD_POST);
     esp_http_client_set_header(client, "Content-Type", "application/json");
     esp_http_client_set_post_field(client, post_data, strlen(post_data));
-    err = esp_http_client_perform(client);
+    esp_err_t err = esp_http_client_perform(client);
     if (err == ESP_OK) {
         ESP_LOGI(TAG, "HTTP POST Status = %d, content_length = %d",
                 esp_http_client_get_status_code(client),
@@ -154,8 +155,10 @@ static void http_rest_with_url(void)
     }
 
     //PUT
-    esp_http_client_set_url(client, "http://httpbin.org/put");
+    const char *put_data = "Using a Palantír requires a person with great strength of will and wisdom. The Palantíri were meant to ";
+    esp_http_client_set_url(client, "https://greenwatch-photos.s3.amazonaws.com/greenwatch_alpha1620035001.514531?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=ASIARBRC4UMDFGMAR6NY%2F20210503%2Feu-north-1%2Fs3%2Faws4_request&X-Amz-Date=20210503T094321Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEFkaCmV1LW5vcnRoLTEiRzBFAiEA%2FU2JCwAHRNXId1If2rEbilBWmycD7JMMasIv7ioxdqoCIFvWvhEiL0OEsUNUrsW6HNaY110lhFwXAAvv74WAksMsKuUBCNP%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEQABoMMDcyMDEzODgyMTE4IgzBmsHD4HDl3aT%2B%2F28quQF5F5gFjuCo0UUq%2BhnEX3eOWzucuvCR3XZVmMkaqhie7p7%2FoPigHHmYK%2FXr%2BDm96rothCDvBELhuqD1cvWhaHNtWokanUXAl6alccSlJ%2BYlBXjdtS7U3kLllmhF9s0A62s12g%2BKXx09VSHwH4RHHTDCY7SZWiPhOO9omgW0PRaPiReqBUdUdgcNf%2FfoAU%2BcYCLgEuDTReJ3WAJhXnn7IMLaWf5QqqZqUsIsF7tR9X3bJ28RQjUpc8X3gTCkir%2BEBjrgAXsiyWtxSxDaIDrKX85X2xJK05ue4rv7uCARB%2BjZOGS6d94cBG4WfdzdcMZ6X4tOPbTbcZQ9Vm%2FxEAMclflEo5NZwZHrYFfMbj27FQbDzc275dJwr%2BmHLJzUGPWvmOaEUeCDXZGwQffwnvW%2Fw%2BV03VfELngHhQS8Fh3QUDa7%2FTR%2FBVrN4Utuh9JRCFBgiliUkADROLr5N8PZRqgYTgWUw4UwypF5O5hoxh7o2ZD0sr29g%2F%2FyHdXNyaQOQo97wuhjnf1VNfgEhj0YWYrGGFqqMDCStyUFBaE1gcO%2FcQVl%2FzEU&X-Amz-Signature=e6f6b7f52d386233a5b7c879b6071d280f81dd4f58d225e4dae53d105b7baae3");
     esp_http_client_set_method(client, HTTP_METHOD_PUT);
+    esp_http_client_set_post_field(client, put_data, strlen(put_data));
     err = esp_http_client_perform(client);
     if (err == ESP_OK) {
         ESP_LOGI(TAG, "HTTP PUT Status = %d, content_length = %d",
@@ -623,22 +626,22 @@ static void http_native_request(void)
 static void http_test_task(void *pvParameters)
 {
     http_rest_with_url();
-    http_rest_with_hostname_path();
-#if CONFIG_ESP_HTTP_CLIENT_ENABLE_BASIC_AUTH
-    http_auth_basic();
-    http_auth_basic_redirect();
-#endif
-    http_auth_digest();
-    http_relative_redirect();
-    http_absolute_redirect();
-    https_with_url();
-    https_with_hostname_path();
-    http_redirect_to_https();
-    http_download_chunk();
-    http_perform_as_stream_reader();
-    https_async();
-    https_with_invalid_url();
-    http_native_request();
+//     http_rest_with_hostname_path();
+// #if CONFIG_ESP_HTTP_CLIENT_ENABLE_BASIC_AUTH
+//     http_auth_basic();
+//     http_auth_basic_redirect();
+// #endif
+//     http_auth_digest();
+//     http_relative_redirect();
+//     http_absolute_redirect();
+//     https_with_url();
+//     https_with_hostname_path();
+//     http_redirect_to_https();
+//     http_download_chunk();
+//     http_perform_as_stream_reader();
+//     https_async();
+//     https_with_invalid_url();
+//     http_native_request();
 
     ESP_LOGI(TAG, "Finish http example");
     vTaskDelete(NULL);
