@@ -31,6 +31,105 @@
 #define MAX_HTTP_OUTPUT_BUFFER 2048
 static const char *TAG = "HTTP_CLIENT";
 
+#define CAM_WIDTH   (320)
+#define CAM_HIGH    (240)
+#define CAM_XCLK  1
+#define CAM_PCLK  33 
+#define CAM_VSYNC 2
+#define CAM_HSYNC 3
+#define CAM_D0    46  /*!< hardware pins: D2 */  
+#define CAM_D1    45  /*!< hardware pins: D3 */
+#define CAM_D2    41  /*!< hardware pins: D4 */
+#define CAM_D3    42  /*!< hardware pins: D5 */
+#define CAM_D4    39  /*!< hardware pins: D6 */
+#define CAM_D5    40  /*!< hardware pins: D7 */
+#define CAM_D6    21  /*!< hardware pins: D8 */
+#define CAM_D7    38  /*!< hardware pins: D9 */
+#define CAM_SCL   7
+#define CAM_SDA   8
+
+static void cam_task(void *arg)
+{    cam_config_t cam_config = {
+        .bit_width    = 8,
+        .mode.jpeg    = 1,
+        .xclk_fre     = 16 * 1000 * 1000,
+        .pin  = {
+            .xclk     = CAM_XCLK,
+            .pclk     = CAM_PCLK,
+            .vsync    = CAM_VSYNC,
+            .hsync    = CAM_HSYNC,
+        },
+        .pin_data     = {CAM_D0, CAM_D1, CAM_D2, CAM_D3, CAM_D4, CAM_D5, CAM_D6, CAM_D7},
+        .vsync_invert = true,
+        .hsync_invert = false,
+        .size = {
+            .width    = CAM_WIDTH,
+            .high     = CAM_HIGH,
+        },
+        .max_buffer_size = 8 * 1024,
+        .task_stack      = 1024,
+        .task_pri        = configMAX_PRIORITIES
+    };
+
+    /*!< With PingPang buffers, the frame rate is higher, or you can use a separate buffer to save memory */
+    cam_config.frame1_buffer = (uint8_t *)heap_caps_malloc(CAM_WIDTH * CAM_HIGH * 2 * sizeof(uint8_t), MALLOC_CAP_SPIRAM);
+    cam_config.frame2_buffer = (uint8_t *)heap_caps_malloc(CAM_WIDTH * CAM_HIGH * 2 * sizeof(uint8_t), MALLOC_CAP_SPIRAM);
+
+    cam_init(&cam_config);
+
+    sensor_t sensor;
+    int camera_version = 0;      /*!<If the camera version is determined, it can be set to manual mode */
+    SCCB_Init(CAM_SDA, CAM_SCL);
+    sensor.slv_addr = SCCB_Probe();
+    ESP_LOGI(TAG, "sensor_id: 0x%x\n", sensor.slv_addr);
+
+    camera_version = 2640;
+    if (sensor.slv_addr == 0x30 || camera_version == 2640) { /*!< Camera: OV2640 */
+        ESP_LOGI(TAG, "OV2640 init start...");
+
+        if (OV2640_Init(0, 1) != 0) {
+            goto fail;
+        }
+
+        if (cam_config.mode.jpeg) {
+            OV2640_JPEG_Mode();
+        } else {
+            OV2640_RGB565_Mode(false);	/*!< RGB565 mode */
+        }
+
+        OV2640_ImageSize_Set(800, 600);
+        OV2640_ImageWin_Set(0, 0, 800, 600);
+        OV2640_OutSize_Set(CAM_WIDTH, CAM_HIGH);
+    }
+
+    ESP_LOGI(TAG, "camera init done\n");
+    cam_start();
+
+    while (1) {
+        uint8_t *cam_buf = NULL;
+        cam_take(&cam_buf);
+        int w, h;
+        uint8_t *img = jpeg_decode(cam_buf, &w, &h);
+
+        if (img) {
+            ESP_LOGI(TAG, "jpeg: w: %d, h: %d\n", w, h);
+            // lcd_set_index(0, 0, w - 1, h - 1);
+            // lcd_write_data(img, w * h * sizeof(uint16_t));
+            free(img);
+        }
+        cam_give(cam_buf);
+        /*!< Use a logic analyzer to observe the frame rate */
+        vTaskDelay(20000/portTICK_PERIOD_MS);
+    }
+
+
+fail:
+    free(cam_config.frame1_buffer);
+    free(cam_config.frame2_buffer);
+    cam_deinit();
+    vTaskDelete(NULL);
+}
+
 /* Root cert for howsmyssl.com, taken from howsmyssl_com_root_cert.pem
 
    The PEM file was extracted from the output of this command:
@@ -125,9 +224,7 @@ static void http_rest_with_url(void)
      * If URL as well as host and path parameters are specified, values of host and path will be considered.
      */
     esp_http_client_config_t config = {
-        .host = "amazonaws.com",
-        .path = "/get",
-        .query = "esp",
+        .url = "https://greenwatch-photos.s3.amazonaws.com/greenwatch_alpha1620244469.954609?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=ASIARBRC4UMDHWWENT46%2F20210505%2Feu-north-1%2Fs3%2Faws4_request&X-Amz-Date=20210505T195429Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEJT%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCmV1LW5vcnRoLTEiRjBEAiBtL%2F4H6UhVuDby0Nsr1bHolorME4KHb7c57U%2BWI0Df2wIge24kgVgHCYjgy5vDzBYVE6wwK3rzTWOXDP5YqtpY9aUq3AEIHRAAGgwwNzIwMTM4ODIxMTgiDCxmHbT82GUXLwrgOSq5ART0rM1htW%2FohyN%2BgCs3Z5ilHiAK2BUoSu2XHsz7Dh4upPCKvl3K7bofh6TSQU3FI2alSHH99%2BqFX7bs6ZhUS3Qs3pVXu4l%2FhsfodoO4dU224Hl7bhEgraGFciSMvVm97Oz6DF%2F6Cdin9tYpzB2LydlR3MUWGzagj3dLV6vBHqgddYXUUmiwLGggAQ%2BYv9W7z5zgwanN%2BAFNDPe868UgoYqa%2Bv8GWDKnY%2BKz9JAnkLJuRm0IwMLykhx8MPTvy4QGOuEB3%2FjdasO%2B27kSes10JWyfkCvAlQORylA5j5sMFxBZ9SoRvw4uZDEJCG83i%2FE3Ddvk35ph0EQ433O2jQTSfTqfMf99d6TdXepUzXi84YVaXFTU%2BlBWtm6jfpcTTjC0Wx1G8%2BCRt5zi7rpVEGpYl61hH3EQwEwuBOFTVOtp5yxyxOZ5frCCv3SRgYADDuBREO6oquovcsdxA9CucKAcnIup3NtZtPbDBIJU1TYwtoeFgVbGRCHJP%2BbkyvTXLD3K4OSUT2zWQJjWCDpPObqqgmnuZzqvQh0RANuDEMTSou7x5gy0&X-Amz-Signature=d63cb9864fbf8f415313615ba2e5c49e4ebb9a704b31a9275c62274a1b37824f",
         .event_handler = _http_event_handler,
         .user_data = local_response_buffer,        // Pass address of local buffer to get response
         .buffer_size_tx = 2048,
@@ -136,7 +233,6 @@ static void http_rest_with_url(void)
 
     //PUT
     const char *put_data = "Using a Palantír requires a person with great strength of will and wisdom. The Palantíri were meant to ";
-    esp_http_client_set_url(client, "https://greenwatch-photos.s3.amazonaws.com/greenwatch_alpha1620051231.486567?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=ASIARBRC4UMDCONAAWFV%2F20210503%2Feu-north-1%2Fs3%2Faws4_request&X-Amz-Date=20210503T141351Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEF4aCmV1LW5vcnRoLTEiRzBFAiEAy9H5D%2FCAFkyf8cDkas7CuYRSj1g5iYST6GqlYz%2FvqMICIC8zpF0W%2BNYLPsXg5xRyh0oHisb3fvPATxeeGwDhDprwKuUBCNf%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEQABoMMDcyMDEzODgyMTE4IgyJtUd%2BRFW6YLDa%2BcEquQGH%2FRouh0039acMvi20o37H6s52EKuJizwMgsCD9%2BH42uEPdyrZ%2FlUKBZXNbiVYqsAR54O9kVav6mbsSaCKpd7GgKM%2BigjIkiV8GjpsAlW9T80cIsbQ3rwrsclotnkTi%2FOnFlXQD1frcCRoPntRVG3EZoHQQU50AQKntcsgOnGUMyV1voChqGuar%2FkjYdOhjy0KmpBWDleotZXx5h26FBdyUzYs1wVH%2FUf%2BnRtQetx6QgFpb%2BZ00m5pbzDMicCEBjrgAbENXzH3pQ75ETzY9%2BXlf%2B%2FdInBU400LHz5EUxi%2FeVAZ857eub%2B7NOwByrgo1kq2Tb7fP1pNKPdjaqpJlqvO2qZq5ZKO%2FCrb0K2ZyppkS2wH%2BDSGmIDrDFagqfytYObrDENSPRFRjg0mBUY03NE60uSkU%2BCSyW08J98QpzYWp1vfH7EL%2F9NUBKA5FBU2eQWBMTwjHw%2FruUrATv6ldvXV9S56Tu6QDLykO%2B1iDcwhUXl6uMq1r9cCnvQTFO%2FrVXa30UeJq7vLh3frfeBH8NxdgdcMiGOsD5DtSUt%2F16%2F7QzkU&X-Amz-Signature=ebc988afac63605332b6418a918c6b142ec59f6c92fb2013261cdac1a52f6894");
     esp_http_client_set_method(client, HTTP_METHOD_PUT);
     esp_http_client_set_header(client, "Content-Type", "image/jpeg");
     esp_http_client_set_post_field(client, put_data, strlen(put_data));
@@ -176,6 +272,7 @@ void app_main(void)
      */
     ESP_ERROR_CHECK(example_connect());
     ESP_LOGI(TAG, "Connected to AP, begin http example");
+    xTaskCreate(cam_task, "cam_task", 2048, NULL, 6, NULL);
 
     xTaskCreate(&http_test_task, "http_test_task", 8192, NULL, 5, NULL);
 }
