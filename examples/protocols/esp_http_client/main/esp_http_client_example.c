@@ -131,7 +131,7 @@ esp_err_t _http_event_handler(esp_http_client_event_t *evt)
     return ESP_OK;
 }
 
-static void http_rest_with_url(const char *put_data)
+static void http_rest_with_url(char *put_data, int put_data_length)
 {
     char local_response_buffer[MAX_HTTP_OUTPUT_BUFFER] = {0};
     /**
@@ -142,7 +142,7 @@ static void http_rest_with_url(const char *put_data)
      * If URL as well as host and path parameters are specified, values of host and path will be considered.
      */
     esp_http_client_config_t config = {
-        .url = "https://greenwatch-photos.s3.amazonaws.com/greenwatch_alpha1620320029.193127?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=ASIARBRC4UMDIYH72XF3%2F20210506%2Feu-north-1%2Fs3%2Faws4_request&X-Amz-Date=20210506T165349Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEKn%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCmV1LW5vcnRoLTEiRzBFAiBTE3mhPAOuNzcwgB7P5Zp%2B%2F3WVRWcYNxs%2BxYd%2BOixlWgIhAIn7V3MKbhm8Oxz%2FjuGadwK8tOp1DGlBFv%2B6WEgGWmLNKqICCDIQABoMMDcyMDEzODgyMTE4IgxvkSJObM640uwzhigq%2FwFq0dXcvBQ8e3XIGFcOBtVJO3akk3bZoPKE%2BVOP571qDE4n5PVcP0oRLzyRb2xSW4q%2Bm1y4RqHn83tkVJ1aZndsgMrNeapsugBNQio8tXc3S1dUxVjz8bo0RGHdvv5j2%2BhoNVv2CYIoct6Cru8tzRq0n1%2FChPfTSpjCNtaS9JkZRY9spuyHQP1i7MzSc6o6irQNBbMqh4LKujTsxYYtR7qEuszQ8ISzgqsZG1Czda6FpyCuJSZqUbeQSNjT74p76mKh2yFShkjck1lwS0NFkSL2bivaWbVd1tgp9UPi4sQm1Z%2FL94uSaBDA%2FY7orFhndB3SWROzLzU2h2a%2BWeHLgkgwm77QhAY6mgEtUFDUCW13VeZZz2JkDbVPfENm20OoSfa6CdPIS7g%2Fq8pKmFx4DWgOWrZ7AygoBuwRhR5BK6EI4zUM%2Bzg4sGj8Xourndmu7ZzJh%2BBkGxwH8g4N%2F%2BtKL4Q93TOBULJrCkQzK30PTvy2TLij41i6vf%2Fv0WnwCXr%2F13Huhsega8UgFBChA6uiufelsz8cV81ZLjcxdAxx1DQfeQjx&X-Amz-Signature=914a1ff5988fb12f15899122a6e9ae17403992cae9d9c60e28840ec5080d2be5",
+        .url = "https://greenwatch-photos.s3.amazonaws.com/greenwatch_alpha1620327923.204921?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=ASIARBRC4UMDFLA7DTP3%2F20210506%2Feu-north-1%2Fs3%2Faws4_request&X-Amz-Date=20210506T190523Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEKv%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCmV1LW5vcnRoLTEiRzBFAiB%2BH50E0MboVhA33UtYJyn9hLgOG6n9rhYlXPqQe2ZMsQIhAJVjGIl3xu7SyfiqfoajLAZlM6dDGmesbztKV5c7wmnqKqICCDQQABoMMDcyMDEzODgyMTE4Igym%2BR297ZiGsF2zLPUq%2FwFRqJgSYYLjTxJHzs0lWOwZlhHCpiWPzF465kOaIp4q%2FPoe%2F0oKc14ZaLKM0eXBrSZ6tibk2jjwOQmWZSgTMixsPoSJWPkgU48XXQnWz0fYWVHGOsbg9zWVlbZAMKJh5Nu%2FQqGJzi7b%2FVH6hvbPcFAsE9b2%2Fb4F%2B2uK4VejaKc1U1CFgFqtvnGZcAlw4%2BXWatQvNH0mPnlmsuth1V%2BBG192Os5CcFg02XwxXYZ1sONGXfsxr9G5ay5LewSB5UtZx7aEzwpyoQZgvUauFu3SojN3vitXhVMKWar277AtaiwLQw8SWfOfxh0ys%2FQGc9LkWPfNNurCBeTYojL4LgPJ9Hww8fvQhAY6mgGGcNAbGCs0IC%2BPFQsZLz0P7vKUNfW%2BxulIQpbkNzpHVU%2BmcWlHNcHBYBCtfVwqK7znabZwykt82bF1usBHmJPKr7Rnefe3ZXOJfKx74epuIwTNz8H75wdEB2U7VzXNT5sOOnze4jLSQIiFG74HNz%2FBs7pZrCVH1R82K4C50%2FlyNi0Tbgt9tsutD%2FtFKAdAB%2FvKpMd3HTKS01TU&X-Amz-Signature=0de4225cfc85eedf7b3074e213b6295bb75889238cf8ddcc707bbc7e28eb647f",
         .event_handler = _http_event_handler,
         .user_data = local_response_buffer,        // Pass address of local buffer to get response
         .buffer_size_tx = 2048,
@@ -152,7 +152,8 @@ static void http_rest_with_url(const char *put_data)
     //PUT
     esp_http_client_set_method(client, HTTP_METHOD_PUT);
     esp_http_client_set_header(client, "Content-Type", "image/jpeg");
-    esp_http_client_set_post_field(client, put_data, strlen(put_data));
+    ESP_LOGI(TAG, "strlen(put_data): %d", strlen(put_data));
+    esp_http_client_set_post_field(client, put_data, put_data_length);//strlen(put_data));
     esp_err_t err = esp_http_client_perform(client);
     if (err == ESP_OK) {
         ESP_LOGI(TAG, "HTTP PUT Status = %d, content_length = %d",
@@ -232,9 +233,11 @@ static void cam_task(void *arg)
             ESP_LOGI(TAG, "jpeg: w: %d, h: %d\n", w, h);
             // lcd_set_index(0, 0, w - 1, h - 1);
             // lcd_write_data(img, w * h * sizeof(uint16_t));
+            ESP_LOGI(TAG, "free heap w/ img: %d", esp_get_free_heap_size());
             const char *put_data = "BlubbUsing a Palantír requires a person with great strength of will and wisdom. The Palantíri were meant to ";
-            http_rest_with_url(put_data);
+            http_rest_with_url((char *)img, w*h);
             free(img);
+            ESP_LOGI(TAG, "free heap w/o img: %d", esp_get_free_heap_size());
         }
         cam_give(cam_buf);
         /*!< Use a logic analyzer to observe the frame rate */
@@ -252,7 +255,7 @@ fail:
 static void http_test_task(void *pvParameters)
 {
     const char *put_data = "BlubbUsing a Palantír requires a person with great strength of will and wisdom. The Palantíri were meant to ";
-    http_rest_with_url(put_data);
+//    http_rest_with_url(put_data);
     ESP_LOGI(TAG, "Finish http example");
     vTaskDelete(NULL);
 }
@@ -274,7 +277,7 @@ void app_main(void)
      */
     ESP_ERROR_CHECK(example_connect());
     ESP_LOGI(TAG, "Connected to AP, begin http example");
-    xTaskCreate(cam_task, "cam_task", 2048+8192, NULL, 6, NULL);
+    xTaskCreate(cam_task, "cam_task", 2048+8192, NULL, 5, NULL);
     //http_rest_with_url();
 
     //xTaskCreate(&http_test_task, "http_test_task", 8192, NULL, 5, NULL);

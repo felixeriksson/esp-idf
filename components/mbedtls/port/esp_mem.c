@@ -22,8 +22,10 @@
 IRAM_ATTR void *esp_mbedtls_mem_calloc(size_t n, size_t size)
 {
 #ifdef CONFIG_MBEDTLS_INTERNAL_MEM_ALLOC
+    //printf("no we're allocating internally\n");
     return heap_caps_calloc(n, size, MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT);
 #elif CONFIG_MBEDTLS_EXTERNAL_MEM_ALLOC
+    //printf("yeah we're allocating externally\n");
     return heap_caps_calloc(n, size, MALLOC_CAP_SPIRAM|MALLOC_CAP_8BIT);
 #elif CONFIG_MBEDTLS_IRAM_8BIT_MEM_ALLOC
 #ifdef CONFIG_MBEDTLS_ASYMMETRIC_CONTENT_LEN
