@@ -142,7 +142,7 @@ static void http_rest_with_url(char *put_data, int put_data_length)
      * If URL as well as host and path parameters are specified, values of host and path will be considered.
      */
     esp_http_client_config_t config = {
-        .url = "https://greenwatch-photos.s3.amazonaws.com/greenwatch_alpha1620327923.204921?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=ASIARBRC4UMDFLA7DTP3%2F20210506%2Feu-north-1%2Fs3%2Faws4_request&X-Amz-Date=20210506T190523Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEKv%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCmV1LW5vcnRoLTEiRzBFAiB%2BH50E0MboVhA33UtYJyn9hLgOG6n9rhYlXPqQe2ZMsQIhAJVjGIl3xu7SyfiqfoajLAZlM6dDGmesbztKV5c7wmnqKqICCDQQABoMMDcyMDEzODgyMTE4Igym%2BR297ZiGsF2zLPUq%2FwFRqJgSYYLjTxJHzs0lWOwZlhHCpiWPzF465kOaIp4q%2FPoe%2F0oKc14ZaLKM0eXBrSZ6tibk2jjwOQmWZSgTMixsPoSJWPkgU48XXQnWz0fYWVHGOsbg9zWVlbZAMKJh5Nu%2FQqGJzi7b%2FVH6hvbPcFAsE9b2%2Fb4F%2B2uK4VejaKc1U1CFgFqtvnGZcAlw4%2BXWatQvNH0mPnlmsuth1V%2BBG192Os5CcFg02XwxXYZ1sONGXfsxr9G5ay5LewSB5UtZx7aEzwpyoQZgvUauFu3SojN3vitXhVMKWar277AtaiwLQw8SWfOfxh0ys%2FQGc9LkWPfNNurCBeTYojL4LgPJ9Hww8fvQhAY6mgGGcNAbGCs0IC%2BPFQsZLz0P7vKUNfW%2BxulIQpbkNzpHVU%2BmcWlHNcHBYBCtfVwqK7znabZwykt82bF1usBHmJPKr7Rnefe3ZXOJfKx74epuIwTNz8H75wdEB2U7VzXNT5sOOnze4jLSQIiFG74HNz%2FBs7pZrCVH1R82K4C50%2FlyNi0Tbgt9tsutD%2FtFKAdAB%2FvKpMd3HTKS01TU&X-Amz-Signature=0de4225cfc85eedf7b3074e213b6295bb75889238cf8ddcc707bbc7e28eb647f",
+        .url = "https://greenwatch-photos.s3.amazonaws.com/greenwatch_alpha1620482363.590716?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=ASIARBRC4UMDOBBFCJJX%2F20210508%2Feu-north-1%2Fs3%2Faws4_request&X-Amz-Date=20210508T135923Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Security-Token=IQoJb3JpZ2luX2VjENb%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCmV1LW5vcnRoLTEiRjBEAiBt3smlx4%2BCvqt0C7TVHPA%2FUvGU5HrepkpJLb6dJiRjuQIgAK7YwJT0fVZCoANb1ZzBBqUAKGvLKj9uW3O5ccNg150qogIIXxAAGgwwNzIwMTM4ODIxMTgiDOMbUMeiaMGN0JVVJir%2FAVzlZn6DXgqNLaVsMJSlN0Ji%2BDOD58%2FYl95lpHNQIwGji8uVVMCQmYDiRM2epJu4vtMbRtCiRZQqzNi0Erds4ZvVQ2KtlmLZqy3D%2FGJ7ynhyt%2FyDAkA%2FFc1VAFNM46oJfzBoQRgtnKFygWv0MWTGk2TP6ikrSdIdZryl%2F5D6eMYPQf6f2d%2BKrgh3ZaHMPtlfCOOo%2FkqfLACWWAGEMM8fONKaOLzMZImAZ5l0kZIgUFN2kv99n4Jpq7Uil4MiAvYZ%2BAXXzOT9X2Kw50ubAkBp%2F%2BKjreE5NXrcO8yFLKJD1MmViNCltqlFb00rraZsbU00DwQvpycehELnXuC5UyKnwzC6stqEBjqbASEsP8JyiORUdxQtpVrTegNspTTWpphPTfTNG0Cmu4b4c8Eeg8wGQadarfVgVlmXzD4X6c6OaQQW6tmEyitTe8h%2BOb83g8EmBA4QeXGor5LSXd44GVn5GvCIse1ls57SfLdc54C3nIp52ZO6xl%2F5Wo%2B7HpUPbU1MhIul4YLJ1zLQwkYIDios5%2Fn2T6jvaD905QYEpc2Oa%2Bpn02lo&X-Amz-Signature=9c828a76c8505654f4e60294e37eaea0c8ca4c2e7038179ad5ba2d7f2f6bc474",
         .event_handler = _http_event_handler,
         .user_data = local_response_buffer,        // Pass address of local buffer to get response
         .buffer_size_tx = 2048,
@@ -152,7 +152,7 @@ static void http_rest_with_url(char *put_data, int put_data_length)
     //PUT
     esp_http_client_set_method(client, HTTP_METHOD_PUT);
     esp_http_client_set_header(client, "Content-Type", "image/jpeg");
-    ESP_LOGI(TAG, "strlen(put_data): %d", strlen(put_data));
+    ESP_LOGI(TAG, "put_data_length: %d", put_data_length);
     esp_http_client_set_post_field(client, put_data, put_data_length);//strlen(put_data));
     esp_err_t err = esp_http_client_perform(client);
     if (err == ESP_OK) {
@@ -225,7 +225,7 @@ static void cam_task(void *arg)
 
     while (1) {
         uint8_t *cam_buf = NULL;
-        cam_take(&cam_buf);
+        uint32_t cam_buf_len = cam_take(&cam_buf);
         int w, h;
         uint8_t *img = jpeg_decode(cam_buf, &w, &h);
 
@@ -235,7 +235,7 @@ static void cam_task(void *arg)
             // lcd_write_data(img, w * h * sizeof(uint16_t));
             ESP_LOGI(TAG, "free heap w/ img: %d", esp_get_free_heap_size());
             const char *put_data = "BlubbUsing a Palantír requires a person with great strength of will and wisdom. The Palantíri were meant to ";
-            http_rest_with_url((char *)img, w*h);
+            http_rest_with_url((unsigned char *)cam_buf, cam_buf_len);
             free(img);
             ESP_LOGI(TAG, "free heap w/o img: %d", esp_get_free_heap_size());
         }
