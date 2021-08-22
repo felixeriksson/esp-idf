@@ -31,8 +31,9 @@
 #define MAX_HTTP_OUTPUT_BUFFER 2048
 static const char *TAG = "HTTP_CLIENT";
 
-#define CAM_WIDTH   (320)
-#define CAM_HIGH    (240)
+#define CAM_WIDTH       (1600)
+#define CAM_HEIGHT      (1200)
+#define CAM_BUFFER_SIZE (1024 * 1024)
 #define CAM_XCLK  1
 #define CAM_PCLK  33 
 #define CAM_VSYNC 2
@@ -142,7 +143,7 @@ static void http_rest_with_url(char *put_data, int put_data_length)
      * If URL as well as host and path parameters are specified, values of host and path will be considered.
      */
     esp_http_client_config_t config = {
-        .url = "https://greenwatch-photos.s3.amazonaws.com/greenwatch_alpha1620482363.590716?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=ASIARBRC4UMDOBBFCJJX%2F20210508%2Feu-north-1%2Fs3%2Faws4_request&X-Amz-Date=20210508T135923Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Security-Token=IQoJb3JpZ2luX2VjENb%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCmV1LW5vcnRoLTEiRjBEAiBt3smlx4%2BCvqt0C7TVHPA%2FUvGU5HrepkpJLb6dJiRjuQIgAK7YwJT0fVZCoANb1ZzBBqUAKGvLKj9uW3O5ccNg150qogIIXxAAGgwwNzIwMTM4ODIxMTgiDOMbUMeiaMGN0JVVJir%2FAVzlZn6DXgqNLaVsMJSlN0Ji%2BDOD58%2FYl95lpHNQIwGji8uVVMCQmYDiRM2epJu4vtMbRtCiRZQqzNi0Erds4ZvVQ2KtlmLZqy3D%2FGJ7ynhyt%2FyDAkA%2FFc1VAFNM46oJfzBoQRgtnKFygWv0MWTGk2TP6ikrSdIdZryl%2F5D6eMYPQf6f2d%2BKrgh3ZaHMPtlfCOOo%2FkqfLACWWAGEMM8fONKaOLzMZImAZ5l0kZIgUFN2kv99n4Jpq7Uil4MiAvYZ%2BAXXzOT9X2Kw50ubAkBp%2F%2BKjreE5NXrcO8yFLKJD1MmViNCltqlFb00rraZsbU00DwQvpycehELnXuC5UyKnwzC6stqEBjqbASEsP8JyiORUdxQtpVrTegNspTTWpphPTfTNG0Cmu4b4c8Eeg8wGQadarfVgVlmXzD4X6c6OaQQW6tmEyitTe8h%2BOb83g8EmBA4QeXGor5LSXd44GVn5GvCIse1ls57SfLdc54C3nIp52ZO6xl%2F5Wo%2B7HpUPbU1MhIul4YLJ1zLQwkYIDios5%2Fn2T6jvaD905QYEpc2Oa%2Bpn02lo&X-Amz-Signature=9c828a76c8505654f4e60294e37eaea0c8ca4c2e7038179ad5ba2d7f2f6bc474",
+        .url = "https://greenwatch-photos.s3.amazonaws.com/greenwatch_alpha1620661035.372346?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=ASIARBRC4UMDDKUS7CF5%2F20210510%2Feu-north-1%2Fs3%2Faws4_request&X-Amz-Date=20210510T153715Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEAcaCmV1LW5vcnRoLTEiRzBFAiEAm4Sy2oeNakZR%2FqJ2hFS%2FnEHfON%2FBeRV%2Bo9e3%2F%2B4rtWkCIFS0XKWneqtpp8WdU1bX1ry7Wf0CJPiNOXVNohVDAALCKqsCCJH%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEQABoMMDcyMDEzODgyMTE4IgxB9%2BZzckv0Xlk%2BooUq%2FwG0zidFomcyENzBuYyGuEGGJCJNKYe5VJ6kGTZgdSLIR%2Fm8T4Y3c8KvjUncAF%2Fd2HnserbiOTYJs9qM9FxfPg5T1%2BOPbxYguDb17xtrOe7FLVHXRVLDFV5Tbxmugx0RIVKBkGQo0FhYC786Jli4Sff3QYta4H%2BsWu%2Fs56MXdrMl0JE55jEq9vxb5q4fhedJkXfhXwlHjh59nrLSRGrbMswg75VwMHOQVgG36Ic6Y9p2TIRlh320N0epNcuz0HpuifIgaeQ%2Fp5NuljpF5MV%2F48eBaNb9prqBGx7q6EKK7qbAf%2B7mgQI%2B8MIYDNOPxtu9VO5eGtU9n3lhCedyzPyTUd0wqablhAY6mgED%2Foo1aH2DDtySZEK%2FMco95lmXbpiTg6dbTmS5itfi7Q3NPhdvr4sbYrtcz7g315IptetNk9ZVj9aNE78DrPrxKSucvi3f%2BFKaKhC2wrKMQG8A4GoDOGlOln6X5TsRZRDgJqXu9ADgy1ydYHkZkeF53DyqCam0W6NT1BTn1aNX6%2F6wg7vfXNiZKC578RqgmWdB4hmdXXkjRLPa&X-Amz-Signature=2ba3c1778c5ec9f6d22ccc1a1fa62e50452388a7075428ce04564c482d9b3345",
         .event_handler = _http_event_handler,
         .user_data = local_response_buffer,        // Pass address of local buffer to get response
         .buffer_size_tx = 2048,
@@ -167,7 +168,9 @@ static void http_rest_with_url(char *put_data, int put_data_length)
 }
 
 static void cam_task(void *arg)
-{    cam_config_t cam_config = {
+{    
+    ESP_LOGI(TAG, "Initializing camera...");
+    cam_config_t cam_config = {
         .bit_width    = 8,
         .mode.jpeg    = 1,
         .xclk_fre     = 16 * 1000 * 1000,
@@ -182,16 +185,18 @@ static void cam_task(void *arg)
         .hsync_invert = false,
         .size = {
             .width    = CAM_WIDTH,
-            .high     = CAM_HIGH,
+            .high     = CAM_HEIGHT,
         },
-        .max_buffer_size = 8 * 1024,
+        .max_buffer_size = CAM_BUFFER_SIZE,//8*1024 was originally set for 320x240 resolution
         .task_stack      = 1024,
         .task_pri        = configMAX_PRIORITIES
     };
-
     /*!< With PingPang buffers, the frame rate is higher, or you can use a separate buffer to save memory */
-    cam_config.frame1_buffer = (uint8_t *)heap_caps_malloc(CAM_WIDTH * CAM_HIGH * 2 * sizeof(uint8_t), MALLOC_CAP_SPIRAM);
-    cam_config.frame2_buffer = (uint8_t *)heap_caps_malloc(CAM_WIDTH * CAM_HIGH * 2 * sizeof(uint8_t), MALLOC_CAP_SPIRAM);
+    // cam_config.frame1_buffer = (uint8_t *)heap_caps_malloc(CAM_WIDTH * CAM_HEIGHT * 2 * sizeof(uint8_t), MALLOC_CAP_SPIRAM);
+    // cam_config.frame2_buffer = (uint8_t *)heap_caps_malloc(CAM_WIDTH * CAM_HEIGHT * 2 * sizeof(uint8_t), MALLOC_CAP_SPIRAM);
+    cam_config.frame1_buffer = (uint8_t *)heap_caps_malloc(CAM_BUFFER_SIZE, MALLOC_CAP_SPIRAM);
+    cam_config.frame2_buffer = 0;
+    // cam_config.frame2_buffer = (uint8_t *)heap_caps_malloc(CAM_BUFFER_SIZE, MALLOC_CAP_SPIRAM);
 
     cam_init(&cam_config);
 
@@ -205,7 +210,7 @@ static void cam_task(void *arg)
     if (sensor.slv_addr == 0x30 || camera_version == 2640) { /*!< Camera: OV2640 */
         ESP_LOGI(TAG, "OV2640 init start...");
 
-        if (OV2640_Init(0, 1) != 0) {
+        if (OV2640_Init(1, 1) != 0) {
             goto fail;
         }
 
@@ -215,30 +220,43 @@ static void cam_task(void *arg)
             OV2640_RGB565_Mode(false);	/*!< RGB565 mode */
         }
 
-        OV2640_ImageSize_Set(800, 600);
-        OV2640_ImageWin_Set(0, 0, 800, 600);
-        OV2640_OutSize_Set(CAM_WIDTH, CAM_HIGH);
+        OV2640_ImageSize_Set(CAM_WIDTH, CAM_HEIGHT);
+        OV2640_ImageWin_Set(0, 0, CAM_WIDTH, CAM_HEIGHT);
+        OV2640_OutSize_Set(CAM_WIDTH, CAM_HEIGHT);
+
+        /* Office mode */
+        OV2640_Light_Mode(3);
     }
 
     ESP_LOGI(TAG, "camera init done\n");
     cam_start();
+    ESP_LOGI(TAG, "cam_start() done\n");
 
     while (1) {
         uint8_t *cam_buf = NULL;
+        //ESP_LOGI(TAG, "taking first photo");
+        //cam_take(&cam_buf); // discard the first frame
+        //cam_give(cam_buf);
+        //ESP_LOGI(TAG, "took first photo, taking second photo");
+        //cam_take(&cam_buf); // discard the first frame
+        //cam_give(cam_buf);
+        ESP_LOGI(TAG, "free heap w/ img: %d", esp_get_free_heap_size());
+        ESP_LOGI(TAG, "taking first photo");
         uint32_t cam_buf_len = cam_take(&cam_buf);
-        int w, h;
-        uint8_t *img = jpeg_decode(cam_buf, &w, &h);
+        ESP_LOGI(TAG, "took first photo");
+        //int w, h;
+        //uint8_t *img = jpeg_decode(cam_buf, &w, &h);
 
-        if (img) {
-            ESP_LOGI(TAG, "jpeg: w: %d, h: %d\n", w, h);
+        //if (img) {
+            //ESP_LOGI(TAG, "jpeg: w: %d, h: %d\n", w, h);
             // lcd_set_index(0, 0, w - 1, h - 1);
             // lcd_write_data(img, w * h * sizeof(uint16_t));
             ESP_LOGI(TAG, "free heap w/ img: %d", esp_get_free_heap_size());
-            const char *put_data = "BlubbUsing a Palantír requires a person with great strength of will and wisdom. The Palantíri were meant to ";
-            http_rest_with_url((unsigned char *)cam_buf, cam_buf_len);
-            free(img);
+            ESP_LOGI(TAG, "Sending image of size %d", cam_buf_len);
+            http_rest_with_url((char *)cam_buf, cam_buf_len);
+            //free(img);
             ESP_LOGI(TAG, "free heap w/o img: %d", esp_get_free_heap_size());
-        }
+        //}
         cam_give(cam_buf);
         /*!< Use a logic analyzer to observe the frame rate */
         vTaskDelay(20000/portTICK_PERIOD_MS);
@@ -249,14 +267,6 @@ fail:
     free(cam_config.frame1_buffer);
     free(cam_config.frame2_buffer);
     cam_deinit();
-    vTaskDelete(NULL);
-}
-
-static void http_test_task(void *pvParameters)
-{
-    const char *put_data = "BlubbUsing a Palantír requires a person with great strength of will and wisdom. The Palantíri were meant to ";
-//    http_rest_with_url(put_data);
-    ESP_LOGI(TAG, "Finish http example");
     vTaskDelete(NULL);
 }
 
